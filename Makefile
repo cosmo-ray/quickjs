@@ -52,6 +52,10 @@ CONFIG_BIGNUM=y
 
 OBJDIR=.obj
 
+ifneq ($(EMSCRIPTEN),)
+  CONFIG_CLANG=y
+endif
+
 ifdef CONFIG_WIN32
   CROSS_PREFIX=i686-w64-mingw32-
   EXE=.exe
@@ -60,9 +64,13 @@ else
   EXE=
 endif
 ifdef CONFIG_CLANG
-  HOST_CC=clang
-  CC=$(CROSS_PREFIX)clang
-  CFLAGS=-g -Wall -MMD -MF $(OBJDIR)/$(@F).d
+  ifeq ($(EMSCRIPTEN),)
+    HOST_CC=clang
+    CC=$(CROSS_PREFIX)clang
+  else
+    CFLAGS += -Wno-implicit-const-int-float-conversion
+  endif
+  CFLAGS += -g -Wall -MMD -MF $(OBJDIR)/$(@F).d
   CFLAGS += -Wextra
   CFLAGS += -Wno-sign-compare
   CFLAGS += -Wno-missing-field-initializers
@@ -179,13 +187,13 @@ $(OBJDIR):
 	mkdir -p $(OBJDIR) $(OBJDIR)/examples $(OBJDIR)/tests
 
 qjs$(EXE): $(QJS_OBJS)
-	$(CC) $(LDFLAGS) $(LDEXPORT) -o $@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) $(LDEXPORT) -o $@ $^ $(LIBS) --preload-file ./
 
 qjs-debug$(EXE): $(patsubst %.o, %.debug.o, $(QJS_OBJS))
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) --preload-file ./
 
 qjsc$(EXE): $(OBJDIR)/qjsc.o $(QJS_LIB_OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) --preload-file ./
 
 ifneq ($(CROSS_PREFIX),)
 

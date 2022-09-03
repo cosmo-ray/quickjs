@@ -5,5 +5,6 @@ it include:
 - some fixes in order to include quickjs.h with gcc 9
 - an ugly hack js_check_stack_overflow to use intptr_t instead of size_t for comparaison because on mymachine sometime size was negative.
 - another hack so I can link libtcc.a and libquickjs.a with the same library (because a symbole was redeclared)
+- support emscrypten in Makkefile for `make libquick.a`
 
 The main documentation is in doc/quickjs.pdf or doc/quickjs.html.
